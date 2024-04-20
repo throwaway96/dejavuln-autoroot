@@ -56,13 +56,14 @@ toast 'Script is running!'
 
 umask 022
 
-if ! tempdir="$(mktemp -d)"; then
-    echo '[x] Failed to create random temporary directory; using fallback'
+if ! tempdir="$(mktemp -d -- '/tmp/autoroot.XXXXXX')"; then
+    echo '[x] Failed to create random temporary directory; using PID-based fallback'
     tempdir="/tmp/autoroot.${$}"
     if ! mkdir -- "${tempdir}"; then
-        echo "[!] Fallback temporary directory ${tempdir} already exists"
-        toast "Fallback temporary directory ${tempdir} already exists"
-        exit 1
+        echo "[x] PID-based fallback temporary directory ${tempdir} already exists"
+        tempdir='/tmp/autoroot.temp'
+        rm -rf -- "${tempdir}"
+        mkdir -- "${tempdir}"
     fi
 fi
 
