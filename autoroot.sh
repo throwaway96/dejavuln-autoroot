@@ -13,8 +13,9 @@
 
 set -e
 
+USB_PATH="${USB_PATH:-/tmp/usb/sda/sda1}"
 DEBUG="${DEBUG:-}"
-IPK_SRC="${IPK_SRC:-/tmp/usb/sda/sda1/hbchannel-0.6.3.ipk}"
+IPK_SRC="${IPK_SRC:-"${USB_PATH}/hbchannel-0.6.3.ipk"}"
 
 toast() {
     [ -n "${logfile}" ] && debug "toasting: '${1}'"
