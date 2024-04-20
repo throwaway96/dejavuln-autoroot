@@ -1,0 +1,12 @@
+* text=auto
+
+*.sh text eol=lf
+*.ipk binary
+*.mp3 binary
+*.lrc binary
+
+*.md text
+/COPYING text
+/.gitignore text
+/.gitattributes text
+/.github/FUNDING.yml text
