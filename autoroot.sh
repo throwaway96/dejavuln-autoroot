@@ -52,6 +52,13 @@ get_sdkversion() {
     luna-send -w 1000 -n 1 -q 'sdkVersion' -f 'luna://com.webos.service.tv.systemproperty/getSystemInfo' '{"keys":["sdkVersion"]}' | sed -n -e 's/^\s*"sdkVersion":\s*"\([0-9.]\+\)"\s*$/\1/p'
 }
 
+lockfile='/tmp/autoroot.lock'
+exec 200>"${lockfile}"
+
+flock -x -n -- 200 || { echo '[!] Another instance of this script is currently running'; exit 2; }
+
+trap -- "rm -f -- '${lockfile}'" EXIT
+
 toast 'Script is running!'
 
 umask 022
@@ -79,6 +86,12 @@ debug "temp dir: ${tempdir}"
 
 log "date: $(date -u -- '+%Y-%m-%d %H:%M:%S UTC')"
 log "id: $(id)"
+
+oncefile="${USB_PATH}/autoroot.once"
+
+[ -e "${oncefile}" ] && { log 'Script already executed'; exit 3; }
+
+touch -- "${oncefile}"
 
 webos_ver="$(get_sdkversion)"
 

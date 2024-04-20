@@ -20,6 +20,11 @@ which works on webOS 3.5 and newer.
 If you have the LG Developer Mode app installed, you *must* remove it before
 rebooting. **Do not** install it while your TV is rooted.
 
+## Troubleshooting
+
+If the script fails, you must delete `autoroot.once` from the USB drive before
+it will run again.
+
 ## Support
 
 You can find more information at [webosbrew.org](https://www.webosbrew.org/).
