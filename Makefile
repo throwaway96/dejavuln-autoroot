@@ -6,7 +6,7 @@ FILES = autoroot.sh hbchannel-0.6.3.ipk lol$$(sh$$IFS/tmp/usb/sda/sda1/autoroot.
 all: $(ZIPOUT)
 
 $(ZIPOUT): $(FILES)
-	zip '$(@)' $(foreach f,$^,'$(f)')
+	zip -X '$(@)' -- $(foreach f,$^,'$(f)')
 
 .PHONY: clean
 clean:
