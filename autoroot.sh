@@ -75,10 +75,13 @@ if ! tempdir="$(mktemp -d -- '/tmp/autoroot.XXXXXX')"; then
 fi
 
 logfile="${tempdir}/log"
+touch -- "${logfile}"
 
-loglink='/tmp/autoroot.log'
-rm -rf -- "${loglink}"
-ln -s -- "${logfile}" "${loglink}"
+if [ -n "${DEBUG}" ]; then
+    loglink='/tmp/autoroot.log'
+    rm -rf -- "${loglink}"
+    ln -s -- "${logfile}" "${loglink}"
+fi
 
 log 'hi'
 
@@ -92,6 +95,8 @@ oncefile="${USB_PATH}/autoroot.once"
 [ -e "${oncefile}" ] && { log 'Script already executed'; exit 3; }
 
 touch -- "${oncefile}"
+
+trap -- "cp -f -- '${logfile}' '${USB_PATH}/autoroot.log'" EXIT
 
 webos_ver="$(get_sdkversion)"
 

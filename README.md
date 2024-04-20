@@ -25,13 +25,16 @@ rebooting. **Do not** install it while your TV is rooted.
 If the script fails, you must delete `autoroot.once` from the USB drive before
 it will run again.
 
+A log file named `autoroot.log` should be created on the USB drive.
+
 ## Support
 
 You can find more information at [webosbrew.org](https://www.webosbrew.org/).
 
 If you need help rooting your TV, try the
 [OpenLGTV Discord](https://discord.gg/hXMHAgJC5R). Before you ask a question,
-check the FAQ (#faq) to see if it is answered there!
+check the FAQ (#faq) to see if it is answered there! Attach your `autoroot.log`
+when asking for help.
 
 ## Credits
 
