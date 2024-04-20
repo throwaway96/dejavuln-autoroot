@@ -5,6 +5,7 @@
 *.mp3 binary
 *.lrc binary
 
+Makefile text eol=lf
 *.md text
 /COPYING text
 /.gitignore text
