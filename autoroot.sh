@@ -59,7 +59,9 @@ flock -x -n -- 200 || { echo '[!] Another instance of this script is currently r
 
 trap -- "rm -f -- '${lockfile}'" EXIT
 
-toast 'Script is running!'
+[ -e "${USB_PATH}/autoroot.debug" ] && DEBUG='file'
+
+[ -n "${DEBUG}" ] && toast 'Script is running!'
 
 umask 022
 

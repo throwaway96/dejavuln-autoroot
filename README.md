@@ -27,6 +27,9 @@ it will run again.
 
 A log file named `autoroot.log` should be created on the USB drive.
 
+You can enable additional logging by creating a file named `autoroot.debug` in
+the root directory of the USB drive.
+
 ## Support
 
 You can find more information at [webosbrew.org](https://www.webosbrew.org/).
