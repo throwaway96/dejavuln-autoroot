@@ -92,11 +92,12 @@ debug "temp dir: ${tempdir}"
 log "date: $(date -u -- '+%Y-%m-%d %H:%M:%S UTC')"
 log "id: $(id)"
 
-oncefile="${USB_PATH}/autoroot.once"
+usb_oncefile="${USB_PATH}/autoroot.once"
+tmp_oncefile='/tmp/autoroot.once'
 
-[ -e "${oncefile}" ] && { log 'Script already executed'; exit 3; }
+[ -e "${usb_oncefile}" -a -e "${tmp_oncefile}" ] && { log 'Script already executed'; exit 3; }
 
-touch -- "${oncefile}"
+touch -- "${usb_oncefile}" "${tmp_oncefile}"
 
 trap -- "cp -f -- '${logfile}' '${USB_PATH}/autoroot.log'" EXIT
 
