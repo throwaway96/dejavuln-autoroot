@@ -21,10 +21,11 @@ toast() {
     [ -n "${logfile}" ] && debug "toasting: '${1}'"
 
     title='autoroot (DejaVuln)'
+    srcapp='com.palm.app.settings'
     escape1="${1//\\/\\\\}"
     escape="${escape1//\"/\\\"}"
-    payload="$(printf '{"sourceId":"com.webos.whatever","message":"<h3>%s</h3>%s"}' "${title}" "${escape}")"
-    luna-send -w 1000 -n 1 'luna://com.webos.notification/createToast' "${payload}" >/dev/null
+    payload="$(printf '{"sourceId":"%s","message":"<h3>%s</h3>%s"}' "${srcapp}" "${title}" "${escape}")"
+    luna-send -w 1000 -n 1 -a "${srcapp}" 'luna://com.webos.notification/createToast' "${payload}" >/dev/null
 }
 
 debug() {
