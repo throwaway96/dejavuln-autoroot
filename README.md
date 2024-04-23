@@ -8,7 +8,7 @@ which works on webOS 3.5 and newer.
 ## Instructions
 
 1. Extract the archive to the root directory of a USB drive. (It should be
-   formatted with FAT32 or NTFS.)
+   formatted with FAT32 or NTFS and only have one partition.)
 2. Plug the USB drive into your TV. (Make sure it's the only USB drive
    connected.)
 3. Open the USB drive in the Music app and browse to
