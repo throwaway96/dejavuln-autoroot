@@ -124,7 +124,7 @@ else
         log 'devmode_enabled exists; make sure the LG Dev Mode app is not installed!'
         toast "Make sure the LG Dev Mode app isn't installed!"
 
-    rm -f -- '/var/luna/preferences/devmode_enabled'
+        rm -f -- '/var/luna/preferences/devmode_enabled'
     else
         debug 'devmode_enabled does not exist'
     fi
