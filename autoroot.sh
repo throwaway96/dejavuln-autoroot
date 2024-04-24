@@ -20,7 +20,7 @@ IPK_SRC="${IPK_SRC:-"${USB_PATH}/hbchannel-0.6.3.ipk"}"
 toast() {
     [ -n "${logfile}" ] && debug "toasting: '${1}'"
 
-    title='autoroot (DejaVuln)'
+    title='dejavuln-autoroot'
     srcapp='com.palm.app.settings'
     escape1="${1//\\/\\\\}"
     escape="${escape1//\"/\\\"}"
