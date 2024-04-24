@@ -7,7 +7,7 @@ which works on webOS 3.5 and newer.
 
 ## Instructions
 
-1. Download the latest release (*not* the ones named "Source code") from the
+1. Download the latest release (*not* the files named "Source code") from the
    [Releases](https://github.com/throwaway96/dejavuln-autoroot/releases)
    page.
 2. Extract the archive to the root directory of a USB drive. (It should be
@@ -37,6 +37,9 @@ the root directory of the USB drive.
 On webOS 8 (webOS 23), you may have to try multiple times; it seems that
 restarting `appinstalld` does not reliably make it detect the existence of
 `devmode_enabled`.
+
+Toasts from the script may be hidden by system messages (like the one about
+the MP3 file not being recognized).
 
 ## Support
 
