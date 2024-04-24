@@ -26,8 +26,8 @@ rebooting. **Do not** install it while your TV is rooted.
 
 ## Troubleshooting
 
-If the script fails, you must delete `autoroot.once` from the USB drive before
-it will run again.
+If the script fails, you must delete `autoroot.once` from the USB drive and/or
+reboot the TV before it will run again.
 
 A log file named `autoroot.log` should be created on the USB drive.
 
