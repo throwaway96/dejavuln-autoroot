@@ -15,7 +15,7 @@ which works on webOS 3.5 and newer.
 3. Plug the USB drive into your TV. (Make sure it's the only USB drive
    connected.)
 4. Open the USB drive in the Music app and browse to
-   `lol$(sh$IFS\tmp\usb\sda\sda1`.
+   `lol$(sh$IFS/tmp/usb$()/sda/sda1`.
 5. Try to play `autoroot.sh).mp3`.
 6. After the pop-up messages tell you rooting is complete, eject the USB
    drive.
