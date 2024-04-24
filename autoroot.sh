@@ -34,18 +34,21 @@ debug() {
     msg="[d] ${1}"
     echo "${msg}"
     echo "${msg}" >>"${logfile}"
+    fsync -- "${logfile}"
 }
 
 log() {
     msg="[ ] ${1}"
     echo "${msg}"
     echo "${msg}" >>"${logfile}"
+    fsync -- "${logfile}"
 }
 
 error() {
     msg="[!] ${1}"
     echo "${msg}"
     echo "${msg}" >>"${logfile}"
+    fsync -- "${logfile}"
     toast "<b>Error:</b> ${1}"
 }
 
@@ -101,6 +104,7 @@ tmp_oncefile='/tmp/autoroot.once'
 [ -e "${usb_oncefile}" -a -e "${tmp_oncefile}" ] && { log 'Script already executed'; exit 3; }
 
 touch -- "${usb_oncefile}" "${tmp_oncefile}"
+fsync -- "${usb_oncefile}"
 
 trap -- "cp -f -- '${logfile}' '${USB_PATH}/autoroot.log'" EXIT
 
