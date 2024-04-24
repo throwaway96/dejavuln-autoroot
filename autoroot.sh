@@ -88,6 +88,8 @@ fi
 
 log 'hi'
 
+log "script path: ${0}"
+
 debug "temp dir: ${tempdir}"
 
 log "date: $(date -u -- '+%Y-%m-%d %H:%M:%S UTC')"
