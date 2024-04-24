@@ -37,9 +37,6 @@ On webOS 8 (webOS 23), you may have to try multiple times; it seems that
 restarting `appinstalld` does not reliably make it detect the existence of
 `devmode_enabled`.
 
-Some people have had trouble getting the script to execute at all on webOS
-3.9.2. I haven't had a chance to look into this yet.
-
 ## Support
 
 You can find more information at [webosbrew.org](https://www.webosbrew.org/).
