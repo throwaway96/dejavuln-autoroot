@@ -108,6 +108,11 @@ webos_ver="$(get_sdkversion)"
 
 log "webOS version: ${webos_ver}"
 
+if [ ! -f "${IPK_SRC}" ]; then
+    error "IPK not found at '${IPK_SRC}'."
+    exit 1
+fi
+
 if [ -d '/var/luna/preferences/devmode_enabled' ]; then
     log 'devmode_enabled is already a directory; is your TV already rooted?'
 else
