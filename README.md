@@ -7,14 +7,17 @@ which works on webOS 3.5 and newer.
 
 ## Instructions
 
-1. Extract the archive to the root directory of a USB drive. (It should be
+1. Download the latest release (*not* the ones named "Source code") from the
+   [Releases](https://github.com/throwaway96/dejavuln-autoroot/releases)
+   page.
+2. Extract the archive to the root directory of a USB drive. (It should be
    formatted with FAT32 or NTFS and only have one partition.)
-2. Plug the USB drive into your TV. (Make sure it's the only USB drive
+3. Plug the USB drive into your TV. (Make sure it's the only USB drive
    connected.)
-3. Open the USB drive in the Music app and browse to
+4. Open the USB drive in the Music app and browse to
    `lol$(sh$IFS\tmp\usb\sda\sda1`.
-4. Try to play `autoroot.sh).mp3`.
-5. After the pop-up messages tell you rooting is complete, eject the USB
+5. Try to play `autoroot.sh).mp3`.
+6. After the pop-up messages tell you rooting is complete, eject the USB
    drive.
 
 If you have the LG Developer Mode app installed, you *must* remove it before
