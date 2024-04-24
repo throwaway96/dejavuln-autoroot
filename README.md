@@ -5,6 +5,21 @@ This is a tool to root LG TVs and automatically install
 It uses [DejaVuln](https://twitter.com/jcxdev/status/1781668313958945132),
 which works on webOS 3.5 and newer.
 
+## Patch status
+
+> [!WARNING]
+> LG has already started testing patched firmware. Do not update your
+> firmware if you want to be able to root your TV.
+
+While it has not yet been released, firmware version 03.40.05 for several
+2023 OTAIDs (W23O, W23H, and W23P: all 2023 OLEDs and more) is patched. It is
+likely that DejaVuln will be patched in any firmware with a webOS version of
+8.4.x (codename number1-namtok).
+
+I expect to see patched firmware for most webOS 4.5+ OTAIDs start rolling out
+relatively soon. However, webOS 3.5 will almost certainly never receive
+patched firmware, and 4.0 probably won't either.
+
 ## Instructions
 
 1. Download the latest release (*not* the files named "Source code") from the
