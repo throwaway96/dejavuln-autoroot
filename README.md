@@ -42,18 +42,20 @@ Right now, unless you messed with the "NSU Mode" setting in the Instart menu
 If you have the LG Developer Mode app installed, you *must* remove it before
 rebooting. **Do not** install it while your TV is rooted.
 
+## Settings
+
+You can influence the behavior of the script by creating certain files in the
+root directory of the USB drive:
+
+* `autoroot.debug` - Enables additional logging.
+* `autoroot.telnet` - Makes a root shell available via telnet on port 23.
+
 ## Troubleshooting
 
 If the script fails, you must delete `autoroot.once` from the USB drive and/or
 reboot the TV before it will run again.
 
 A log file named `autoroot.log` should be created on the USB drive.
-
-You can enable additional logging by creating a file named `autoroot.debug` in
-the root directory of the USB drive.
-
-If you create a file named `autoroot.telnet`, a root shell will be available
-via telnet on port 23.
 
 On webOS 8 (webOS 23), you may have to try multiple times; it seems that
 restarting `appinstalld` does not reliably make it detect the existence of
