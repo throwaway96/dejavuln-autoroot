@@ -171,14 +171,17 @@ case "${result}" in
     *installed*) ;;
     *"Unknown method"*)
         error 'Installation failed (devmode_enabled not recognized)'
+        debug "/dev/install response: '${result}'"
         exit 1
     ;;
     *failed*)
         error 'Installation failed'
+        log "/dev/install response: '${result}'"
         exit 1
     ;;
     *)
         error 'Installation failed for unknown reason'
+        log "/dev/install response: '${result}'"
         exit 1
     ;;
 esac
@@ -193,4 +196,6 @@ toast 'Rooting complete. <h4>Do not install the LG Dev Mode app while rooted!</h
 
 reboot_payload="$(printf '{"sourceId":"%s","message":"<h3>dejavuln-autoroot</h3>Rooting complete. You may need to reboot for Homebrew Channel to appear. Would you like to reboot now?","buttons":[{"label":"Reboot now","onclick":"luna://com.webos.service.sleep/shutdown/machineReboot","params":{"reason":"remoteKey"}},{"label":"Don'\''t reboot"}]}' "${srcapp}")"
 
-luna-send -a "${srcapp}" -n 1 'luna://com.webos.notification/createAlert' "${reboot_payload}" >/dev/null
+alert_response="$(luna-send -w 2000 -a "${srcapp}" -n 1 'luna://com.webos.notification/createAlert' "${reboot_payload}")"
+
+debug "/createAlert response: '${alert_response}'"
