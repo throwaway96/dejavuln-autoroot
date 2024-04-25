@@ -11,14 +11,17 @@ which works on webOS 3.5 and newer.
 > LG has already started testing patched firmware. Do not update your
 > firmware if you want to be able to root your TV.
 
-While it has not yet been released, firmware version 03.40.05 for several
-2023 OTAIDs (W23O, W23H, and W23P: all 2023 OLEDs and more) is patched. It is
-likely that DejaVuln will be patched in any firmware with a webOS version of
-8.4.x (codename number1-namtok).
+While it has not yet been released, LG is testing patched firmware for several
+2023 OTAIDs (W23O, W23H, and W23P: all 2023 OLEDs and more). It is likely that
+DejaVuln will be patched in any firmware with a webOS version of 8.4.x
+(codename number1-namtok).
 
 I expect to see patched firmware for most webOS 4.5+ OTAIDs start rolling out
 relatively soon. However, webOS 3.5 will almost certainly never receive
 patched firmware, and 4.0 probably won't either.
+
+Right now, unless you messed with the "NSU Mode" setting in the Instart menu
+(which is not recommended), you will not have patched firmware.
 
 ## Instructions
 
