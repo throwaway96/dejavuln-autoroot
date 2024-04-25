@@ -48,7 +48,8 @@ You can influence the behavior of the script by creating certain files in the
 root directory of the USB drive:
 
 * `autoroot.debug` - Enables additional logging.
-* `autoroot.telnet` - Makes a root shell available via telnet on port 23.
+* `autoroot.telnet` - Makes a root shell available via telnet on port 23 when
+  the script starts.
 
 ## Troubleshooting
 
@@ -59,13 +60,16 @@ A log file named `autoroot.log` should be created on the USB drive.
 
 On webOS 8 (webOS 23), you may have to try multiple times; it seems that
 restarting `appinstalld` does not reliably make it detect the existence of
-`devmode_enabled`.
+`devmode_enabled`. May also apply to webOS 7.
 
 Toasts from the script may be hidden by system messages (like the one about
 the MP3 file not being recognized).
 
 If the toast and/or log says "Rooting complete" but you don't see Homebrew
 Channel, reboot the TV. Make sure Quick Start+ is disabled.
+
+Make sure the archive is extracted such that `autoroot.sh` is in the root
+directory of the USB drive.
 
 ## Support
 
