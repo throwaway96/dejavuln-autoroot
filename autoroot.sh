@@ -17,11 +17,12 @@ USB_PATH="${USB_PATH:-$(dirname -- "${0}")}"
 DEBUG="${DEBUG:-}"
 IPK_SRC="${IPK_SRC:-"${USB_PATH}/hbchannel-0.6.3.ipk"}"
 
+srcapp='com.webos.service.secondscreen.gateway'
+
 toast() {
     [ -n "${logfile}" ] && debug "toasting: '${1}'"
 
     title='dejavuln-autoroot'
-    srcapp='com.palm.app.settings'
     escape1="${1//\\/\\\\}"
     escape="${escape1//\"/\\\"}"
     payload="$(printf '{"sourceId":"%s","message":"<h3>%s</h3>%s"}' "${srcapp}" "${title}" "${escape}")"
@@ -189,3 +190,7 @@ fi
 
 log 'Rooting complete'
 toast 'Rooting complete. <h4>Do not install the LG Dev Mode app while rooted!</h4>'
+
+reboot_payload="$(printf '{"sourceId":"%s","message":"<h3>dejavuln-autoroot</h3>Rooting complete. You may need to reboot for Homebrew Channel to appear. Would you like to reboot now?","buttons":[{"label":"Reboot now","onclick":"luna://com.webos.service.sleep/shutdown/machineReboot","params":{"reason":"remoteKey"}},{"label":"Don'\''t reboot"}]}' "${srcapp}")"
+
+luna-send -a "${srcapp}" -n 1 'luna://com.webos.notification/createAlert' "${reboot_payload}" >/dev/null
