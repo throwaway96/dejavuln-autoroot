@@ -52,6 +52,9 @@ A log file named `autoroot.log` should be created on the USB drive.
 You can enable additional logging by creating a file named `autoroot.debug` in
 the root directory of the USB drive.
 
+If you create a file named `autoroot.telnet`, a root shell will be available
+via telnet on port 23.
+
 On webOS 8 (webOS 23), you may have to try multiple times; it seems that
 restarting `appinstalld` does not reliably make it detect the existence of
 `devmode_enabled`.
