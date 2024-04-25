@@ -59,6 +59,9 @@ restarting `appinstalld` does not reliably make it detect the existence of
 Toasts from the script may be hidden by system messages (like the one about
 the MP3 file not being recognized).
 
+If the toast and/or log says "Rooting complete" but you don't see Homebrew
+Channel, reboot the TV. Make sure Quick Start+ is disabled.
+
 ## Support
 
 You can find more information at [webosbrew.org](https://www.webosbrew.org/).
