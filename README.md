@@ -39,7 +39,9 @@ Right now, unless you messed with the "NSU Mode" setting in the Instart menu
 4. Open the USB drive in the Music app and browse to
    `lol$(sh$IFS$(find$IFS/tmp`.
 5. Try to play the MP3 file
-   (`usb$IFS-maxdepth${IFS}3$IFS-name${IFS}autoroot.sh)).mp3`).
+   (`usb$IFS-maxdepth${IFS}3$IFS-name${IFS}autoroot.sh)).mp3`). You should
+   expect to see an error message about being unable to play the MP3 whether
+   or not the exploit works.
 6. After the pop-up messages tell you rooting is complete, eject the USB
    drive.
 
