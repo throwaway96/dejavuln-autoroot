@@ -45,8 +45,9 @@ Right now, unless you messed with the "NSU Mode" setting in the Instart menu
 6. After the pop-up messages tell you rooting is complete, eject the USB
    drive.
 
-If you have the LG Developer Mode app installed, you *must* remove it before
-rebooting. **Do not** install it while your TV is rooted.
+> [!WARNING]
+> If you have the LG Developer Mode app installed, you *must* remove it before
+> rebooting. **Do not** install it while your TV is rooted.
 
 ## Settings
 
