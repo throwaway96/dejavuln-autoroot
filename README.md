@@ -3,7 +3,8 @@
 This is a tool to root LG TVs and automatically install
 [Homebrew Channel](https://github.com/webosbrew/webos-homebrew-channel).
 It uses [DejaVuln](https://twitter.com/jcxdev/status/1781668313958945132),
-which works on webOS 3.5 and newer.
+which works on webOS 3.5 and newer. This exploit will not work on TVs from
+2016 or earlier.
 
 ## Patch status
 
@@ -22,6 +23,9 @@ patched firmware, and 4.0 probably won't either.
 
 Right now, unless you messed with the "NSU Mode" setting in the Instart menu
 (which is not recommended), you will not have patched firmware.
+
+**If you have a 2024 model, please contact us on the
+[OpenLGTV Discord](https://discord.gg/hXMHAgJC5R).**
 
 ## Instructions
 
