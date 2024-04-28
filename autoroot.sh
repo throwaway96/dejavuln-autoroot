@@ -57,6 +57,10 @@ get_sdkversion() {
     luna-send -w 1000 -n 1 -q 'sdkVersion' -f 'luna://com.webos.service.tv.systemproperty/getSystemInfo' '{"keys":["sdkVersion"]}' | sed -n -e 's/^\s*"sdkVersion":\s*"\([0-9.]\+\)"\s*$/\1/p'
 }
 
+get_devmode_app_state() {
+    luna-send -w 5000 -n 1 -q 'exist' -f 'luna://com.webos.applicationManager/getAppStatus' '{"appId":"com.palmdts.devmode"}' | sed -n -e 's/^\s*"exist":\s*\(true\|false\)\s*,\?\s*$/\1/p'
+}
+
 lockfile='/tmp/autoroot.lock'
 exec 200>"${lockfile}"
 
@@ -196,8 +200,37 @@ fi
 log 'Rooting complete'
 toast 'Rooting complete. <h4>Do not install the LG Dev Mode app while rooted!</h4>'
 
-reboot_payload="$(printf '{"sourceId":"%s","message":"<h3>dejavuln-autoroot</h3>Rooting complete. You may need to reboot for Homebrew Channel to appear. Would you like to reboot now?","buttons":[{"label":"Reboot now","onclick":"luna://com.webos.service.sleep/shutdown/machineReboot","params":{"reason":"remoteKey"}},{"label":"Don'\''t reboot"}]}' "${srcapp}")"
+devmode_installed="$(get_devmode_app_state)"
 
-alert_response="$(luna-send -w 2000 -a "${srcapp}" -n 1 'luna://com.webos.notification/createAlert' "${reboot_payload}")"
+debug "Dev Mode app installed: '${devmode_installed}'"
+
+buttons_reboot='{"label":"Reboot now","onclick":"luna://com.webos.service.sleep/shutdown/machineReboot","params":{"reason":"remoteKey"}},{"label":"Don'\''t reboot"}'
+buttons_ok='{"label":"OK"}'
+
+message_reboot='Would you like to reboot now?'
+message_devmode='However, the Dev Mode app is installed. You must uninstall it before rebooting!'
+buttons_devmode_unknown='The status of the Dev Mode app could not be determined. Please report this issue. If you know it is not installed, you can reboot now. Otherwise, make sure it is removed before rebooting.<br>Would you like to reboot now?'
+
+case "${devmode_installed}" in
+    false)
+        log "Dev Mode app not installed. (Don't install it!)"
+        buttons="${buttons_reboot}"
+        message="${message_reboot}"
+    ;;
+    true)
+        log 'Dev Mode app installed; uninstall it before rebooting!'
+        buttons="${buttons_ok}"
+        message="${message_devmode}"
+    ;;
+    *)
+        log "Unknown Dev Mode app state: '${devmode_installed}' (please report)"
+        buttons="${buttons_reboot}"
+        message="${buttons_devmode_unknown}"
+    ;;
+esac
+
+payload="$(printf '{"sourceId":"%s","message":"<h3>dejavuln-autoroot</h3>Rooting complete. You may need to reboot for Homebrew Channel to appear.<br>%s","buttons":[%s]}' "${srcapp}" "${message}" "${buttons}")"
+
+alert_response="$(luna-send -w 2000 -a "${srcapp}" -n 1 'luna://com.webos.notification/createAlert' "${payload}")"
 
 debug "/createAlert response: '${alert_response}'"
