@@ -61,6 +61,65 @@ get_devmode_app_state() {
     luna-send -w 5000 -n 1 -q 'exist' -f 'luna://com.webos.applicationManager/getAppStatus' '{"appId":"com.palmdts.devmode"}' | sed -n -e 's/^\s*"exist":\s*\(true\|false\)\s*,\?\s*$/\1/p'
 }
 
+check_sd_verify() {
+    script_systemd='/lib/systemd/system/scripts/devmode.sh'
+    script_upstart='/etc/init/devmode.conf'
+
+	if [ -e "${script_systemd}" ]; then
+        script="${script_systemd}"
+	elif [ -e "${script_upstart}" ]; then
+        script="${script_upstart}"
+    else
+        log 'Missing both devmode init scripts; please report this!'
+        # err on the safe side by assuming it will be verified
+        return 0
+    fi
+
+    if [ ! -f "${script}" ]; then
+        log 'Devmode init script is not a file; please report this!'
+        return 0
+    fi
+
+    fgrep -q -e 'openssl dgst' -- "${script}"
+}
+
+sd_script='/media/cryptofs/apps/usr/palm/services/com.palmdts.devmode.service/start-devmode.sh'
+sd_sig='/media/cryptofs/apps/usr/palm/services/com.palmdts.devmode.service/start-devmode.sig'
+sd_key='/usr/palm/services/com.palm.service.devmode/pub.pem'
+
+verify_sd() {
+    # if it's not present, don't worry about it
+    [ ! -f "${sd_script}" ] && return 0
+
+    if [ ! -f "${sd_key}" ]; then
+        log "Expected Dev Mode public key is not present; please report this!"
+        # verification will fail without the public key file
+        return 1
+    fi
+
+    if [ ! -f "${sd_sig}" ]; then
+        log 'start-devmode.sh verification failed: missing signature file'
+        return 1
+    fi
+
+    verify="$(openssl dgst -sha512 -verify "${sd_key}" -signature "${sd_sig}" "${sd_script}")"
+
+    case "${verify}" in 
+    'Verified OK')
+        debug 'start-devmode.sh verification succeeded'
+        return 0
+    ;;
+    'Verification Failure')
+        log 'start-devmode.sh verification failed: signature mismatch'
+        return 1
+    ;;
+    *)
+        log "start-devmode.sh verification failed for unknown reason: '${verify}'"
+        return 1
+    ;;
+    esac
+}
+
 lockfile='/tmp/autoroot.lock'
 exec 200>"${lockfile}"
 
@@ -129,7 +188,6 @@ if [ -d '/var/luna/preferences/devmode_enabled' ]; then
 else
     if [ -e '/var/luna/preferences/devmode_enabled' ]; then
         log 'devmode_enabled exists; make sure the LG Dev Mode app is not installed!'
-        toast "Make sure the LG Dev Mode app isn't installed!"
 
         rm -f -- '/var/luna/preferences/devmode_enabled'
     else
@@ -199,6 +257,28 @@ fi
 
 log 'Rooting complete'
 toast 'Rooting complete. <h4>Do not install the LG Dev Mode app while rooted!</h4>'
+
+if [ -f "${sd_script}" ]; then
+    if check_sd_verify; then
+        log 'Current firmware verifies start-devmode.sh signature'
+
+        if verify_sd; then
+            log 'Your start-devmode.sh passes verification. If the Dev Mode app is installed, uninstall it!'
+        else
+            mv -- "${sd_script}" "${sc_script}.backup"
+            log 'Your start-devmode.sh failed verification and was renamed to prevent /media/developer from being wiped'
+            toast '<b>Warning:</b> Renamed start-devmode.sh to prevent deletion of apps'
+        fi
+    else
+        log 'Current firmware does not verify start-devmode.sh signature, but an updated version might'
+
+        if [ ! -f "${sd_sig}" ]; then
+            log 'You are missing start-devmode.sig, so verification would fail. Be careful updating your firmware!'
+        fi
+    fi
+else
+    debug 'start-devmode.sh does not exist; skipping checks'
+fi
 
 devmode_installed="$(get_devmode_app_state)"
 
