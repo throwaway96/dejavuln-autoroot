@@ -58,7 +58,7 @@ get_sdkversion() {
 }
 
 get_devmode_app_state() {
-    luna-send -w 5000 -n 1 -q 'exist' -f 'luna://com.webos.applicationManager/getAppStatus' '{"appId":"com.palmdts.devmode"}' | sed -n -e 's/^\s*"exist":\s*\(true\|false\)\s*,\?\s*$/\1/p'
+    luna-send -w 5000 -n 1 -q 'returnValue' -f 'luna://com.webos.applicationManager/getAppInfo' '{"id":"com.palmdts.devmode"}' | sed -n -e 's/^\s*"returnValue":\s*\(true\|false\)\s*,\?\s*$/\1/p'
 }
 
 check_sd_verify() {
