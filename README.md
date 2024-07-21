@@ -5,23 +5,25 @@ This is a tool to root LG TVs and automatically install
 It uses [DejaVuln](https://twitter.com/jcxdev/status/1781668313958945132),
 which works on webOS 3.5 and newer. This exploit will not work on TVs from
 2016 or earlier. 2024 models have likely all been patched, and patched
-firmware for earlier models is being released.
+firmware for many earlier models has been released.
+
+> [!NOTE]
+> Use [CanI.RootMy.TV](https://cani.rootmy.tv/) to determine whether your
+> firmware is vulnerable.
 
 ## Patch status
 
 > [!WARNING]
-> LG has started rolling out patched firmware. Do not update your
+> Many models are patched. Do not update your
 > firmware if you want to be able to root your TV.
 
-Release firmware version 03.31.76 for OTAID HE_DTV_W23P_AFADATAA is patched.
-There are many other OTAIDs with prerelease patched firmware.
+Many webOS 5+ OTAIDs have had patched firmware released, with others having
+patched prerelease firmware. To avoid prerelease firmware, don't mess with
+the "NSU Mode" setting in the Instart menu (which is not recommended anyway).
 
-To avoid prerelease firmware, don't mess with with the "NSU Mode" setting in
-the Instart menu (which is not recommended anyway).
-
-I expect to see patched firmware for most webOS 4.5+ OTAIDs start rolling out
-relatively soon. However, webOS 3.5 will almost certainly never receive
-patched firmware, and 4.0 probably won't either.
+I expect to see patched firmware for almost all webOS 4.5+ OTAIDs start
+rolling out relatively soon. However, webOS 3.5 will almost certainly never
+receive patched firmware, and 4.0 probably won't either.
 
 2024 models are patched.
 
