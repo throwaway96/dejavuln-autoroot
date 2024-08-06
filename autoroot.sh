@@ -131,7 +131,7 @@ trap -- "rm -f -- '${lockfile}'" EXIT
 
 [ -n "${DEBUG}" ] && toast 'Script is running!'
 
-[ -e "${USB_PATH}/autoroot.telnet" ] && telnetd -l sh
+[ -e "${USB_PATH}/autoroot.telnet" ] && { telnetd -l sh || echo "[!] Failed to start telnetd (${?})"; }
 
 umask 022
 
