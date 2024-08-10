@@ -200,55 +200,86 @@ else
     fi
 fi
 
-if restart appinstalld >/dev/null; then
-    debug 'appinstalld restarted'
-else
-    log 'Failed to restart appinstalld'
-fi
+restart_appinstalld() {
+    if restart appinstalld >/dev/null; then
+        debug 'appinstalld restarted'
+    else
+        log 'Failed to restart appinstalld'
+    fi
+}
+
+restart_appinstalld
 
 ipkpath="${tempdir}/hbchannel.ipk"
 
 cp -- "${IPK_SRC}" "${ipkpath}"
 
-instpayload="$(printf '{"id":"com.ares.defaultName","ipkUrl":"%s","subscribe":true}' "${ipkpath}")"
+install_hbchannel() {
+    instpayload="$(printf '{"id":"com.ares.defaultName","ipkUrl":"%s","subscribe":true}' "${ipkpath}")"
 
-fifopath="${tempdir}/fifo"
+    fifopath="${tempdir}/fifo"
 
-mkfifo -- "${fifopath}"
+    mkfifo -- "${fifopath}"
 
-log "Installing ${ipkpath}..."
-toast 'Installing...'
+    log "Installing ${ipkpath}..."
+    toast 'Installing...'
 
-luna-send -w 20000 -i 'luna://com.webos.appInstallService/dev/install' "${instpayload}" >"${fifopath}" &
-luna_pid="${!}"
+    luna-send -w 20000 -i 'luna://com.webos.appInstallService/dev/install' "${instpayload}" >"${fifopath}" &
+    luna_pid="${!}"
 
-if ! result="$(fgrep -m 1 -e 'installed' -e 'failed' -e 'Unknown method' -- "${fifopath}")"; then
+    if ! result="$(fgrep -m 1 -e 'installed' -e 'failed' -e 'Unknown method' -- "${fifopath}")"; then
+        rm -f -- "${fifopath}"
+        error 'Install timed out'
+        exit 1
+    fi
+
+    kill -TERM "${luna_pid}" 2>/dev/null || true
     rm -f -- "${fifopath}"
-    error 'Install timed out'
-    exit 1
-fi
 
-kill -TERM "${luna_pid}" 2>/dev/null || true
-rm -f -- "${fifopath}"
+    case "${result}" in
+        *installed*) ;;
+        *"Unknown method"*)
+            error 'Installation failed (devmode_enabled not recognized)'
+            debug "/dev/install response: '${result}'"
+            return 1
+        ;;
+        *failed*)
+            error 'Installation failed'
+            log "/dev/install response: '${result}'"
+            exit 1
+        ;;
+        *)
+            error 'Installation failed for unknown reason'
+            log "/dev/install response: '${result}'"
+            exit 1
+        ;;
+    esac
 
-case "${result}" in
-    *installed*) ;;
-    *"Unknown method"*)
-        error 'Installation failed (devmode_enabled not recognized)'
-        debug "/dev/install response: '${result}'"
+    return 0
+}
+
+sleep_secs_base=2
+retries=3
+
+for retry in $(seq "${retries}" -1 0); do
+    if install_hbchannel; then
+        # success
+        break
+    fi
+
+    if [ "${retry}" -eq 0 ]; then
+        error 'Retries exhausted: giving up'
         exit 1
-    ;;
-    *failed*)
-        error 'Installation failed'
-        log "/dev/install response: '${result}'"
-        exit 1
-    ;;
-    *)
-        error 'Installation failed for unknown reason'
-        log "/dev/install response: '${result}'"
-        exit 1
-    ;;
-esac
+    fi
+
+    sleep_secs=$((sleep_secs_base * (retries - retry + 1)))
+
+    
+    restart_appinstalld
+
+    log "Sleeping for ${sleep_secs} seconds before trying again (${retry} tries remaining)"
+    sleep "${sleep_secs}"
+done
 
 if ! /media/developer/apps/usr/palm/services/org.webosbrew.hbchannel.service/elevate-service >"${tempdir}/elevate.log"; then
     error 'Elevation failed'
