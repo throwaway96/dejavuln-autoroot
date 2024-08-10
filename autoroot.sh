@@ -15,7 +15,7 @@ set -e
 
 USB_PATH="${USB_PATH:-$(dirname -- "${0}")}"
 DEBUG="${DEBUG:-}"
-IPK_SRC="${IPK_SRC:-"${USB_PATH}/hbchannel-0.6.3.ipk"}"
+IPK_SRC="${IPK_SRC:-"${USB_PATH}/hbchannel.ipk"}"
 
 srcapp='com.webos.service.secondscreen.gateway'
 

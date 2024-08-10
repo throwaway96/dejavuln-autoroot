@@ -2,7 +2,7 @@ ZIPOUT = dejavuln-autoroot.zip
 
 HAXBASE = lol$$(sh$$IFS$$(find$$IFS/tmp/usb$$IFS-maxdepth$${IFS}3$$IFS-name$${IFS}autoroot.sh))
 
-FILES = autoroot.sh hbchannel-0.6.3.ipk $(HAXBASE).mp3 $(HAXBASE).lrc
+FILES = autoroot.sh hbchannel.ipk $(HAXBASE).mp3 $(HAXBASE).lrc
 
 .PHONY: all
 all: $(ZIPOUT)
