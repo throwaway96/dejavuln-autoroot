@@ -27,7 +27,7 @@ receive patched firmware, and 4.0 probably won't either.
 
 2024 models are patched.
 
-**If you know where I can get a 2024 main board, please contact me on the
+**If you want to donate any TV boards for development, please contact me on the
 [OpenLGTV Discord](https://discord.gg/hXMHAgJC5R).**
 
 ## Instructions
@@ -39,7 +39,7 @@ receive patched firmware, and 4.0 probably won't either.
    formatted with FAT32 or NTFS and only have one partition.)
 3. Plug the USB drive into your TV. (Make sure it's the only USB drive
    connected.)
-4. Open the USB drive in the Music app and browse to
+4. Open the USB drive in the Music (or Media Player) app and browse to
    `lol$(sh$IFS$(find$IFS/tmp`.
 5. Try to play the MP3 file
    (`usb$IFS-maxdepth${IFS}3$IFS-name${IFS}autoroot.sh)).mp3`). You should
