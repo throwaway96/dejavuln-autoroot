@@ -320,7 +320,7 @@ buttons_ok='{"label":"OK"}'
 
 message_reboot='Would you like to reboot now?'
 message_devmode='However, the Dev Mode app is installed. You must uninstall it before rebooting!'
-buttons_devmode_unknown='The status of the Dev Mode app could not be determined. Please report this issue. If you know it is not installed, you can reboot now. Otherwise, make sure it is removed before rebooting.<br>Would you like to reboot now?'
+message_devmode_unknown='The status of the Dev Mode app could not be determined. Please report this issue. If you know it is not installed, you can reboot now. Otherwise, make sure it is removed before rebooting.<br>Would you like to reboot now?'
 
 case "${devmode_installed}" in
     false)
@@ -336,7 +336,7 @@ case "${devmode_installed}" in
     *)
         log "Unknown Dev Mode app state: '${devmode_installed}' (please report)"
         buttons="${buttons_reboot}"
-        message="${buttons_devmode_unknown}"
+        message="${message_devmode_unknown}"
     ;;
 esac
 
