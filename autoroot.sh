@@ -3,7 +3,7 @@
 # dejavuln-autoroot
 # by throwaway96
 # https://github.com/throwaway96/dejavuln-autoroot
-# Copyright 2024. Licensed under AGPL v3 or later. No warranties.
+# Copyright 2024-2025. Licensed under AGPL v3 or later. No warranties.
 
 # Thanks to:
 # - Jacob Clayden (https://jacobcx.dev/) for discovering DejaVuln
@@ -13,20 +13,32 @@
 
 set -e
 
-USB_PATH="${USB_PATH:-$(dirname -- "${0}")}"
+SCRIPT_DIR="${SCRIPT_DIR:-$(dirname -- "${0}")}"
 DEBUG="${DEBUG:-}"
-IPK_SRC="${IPK_SRC:-"${USB_PATH}/hbchannel.ipk"}"
+IPK_SRC="${IPK_SRC:-"${SCRIPT_DIR}/hbchannel.ipk"}"
+IPK_URL='https://github.com/webosbrew/webos-homebrew-channel/releases/download/v0.7.2/org.webosbrew.hbchannel_0.7.2_all.ipk'
+SCRIPT_NAME='dejavuln-autoroot'
 
-srcapp='com.webos.service.secondscreen.gateway'
+is_root() {
+    test "$(id -u)" -eq 0
+}
+
+# AppID for toasts/alerts
+SRC_APPID='com.webos.service.secondscreen.gateway'
 
 toast() {
     [ -n "${logfile}" ] && debug "toasting: '${1}'"
 
-    title='dejavuln-autoroot'
+    title="${SCRIPT_NAME}"
     escape1="${1//\\/\\\\}"
     escape="${escape1//\"/\\\"}"
-    payload="$(printf '{"sourceId":"%s","message":"<h3>%s</h3>%s"}' "${srcapp}" "${title}" "${escape}")"
-    luna-send -w 1000 -n 1 -a "${srcapp}" 'luna://com.webos.notification/createToast' "${payload}" >/dev/null
+    payload="$(printf '{"sourceId":"%s","message":"<h3>%s</h3>%s"}' "${SRC_APPID}" "${title}" "${escape}")"
+
+    if is_root; then
+        luna-send -w 1000 -n 1 -a "${SRC_APPID}" 'luna://com.webos.notification/createToast' "${payload}" >/dev/null
+    else
+        luna-send-pub -w 1000 -n 1 -q 'sdkVersion' -f 'luna://com.webos.service.tv.systemproperty/getSystemInfo' '{"keys":["sdkVersion"]}' | sed -n -e 's/^\s*"sdkVersion":\s*"\([0-9.]\+\)"\s*$/\1/p'
+    fi
 }
 
 debug() {
@@ -54,11 +66,21 @@ error() {
 }
 
 get_sdkversion() {
-    luna-send -w 1000 -n 1 -q 'sdkVersion' -f 'luna://com.webos.service.tv.systemproperty/getSystemInfo' '{"keys":["sdkVersion"]}' | sed -n -e 's/^\s*"sdkVersion":\s*"\([0-9.]\+\)"\s*$/\1/p'
+    luna-send-pub -w 1000 -n 1 -q 'sdkVersion' -f 'luna://com.webos.service.tv.systemproperty/getSystemInfo' '{"keys":["sdkVersion"]}' | sed -n -e 's/^\s*"sdkVersion":\s*"\([0-9.]\+\)"\s*$/\1/p'
 }
 
 get_devmode_app_state() {
+    # root required
     luna-send -w 5000 -n 1 -q 'returnValue' -f 'luna://com.webos.applicationManager/getAppInfo' '{"id":"com.palmdts.devmode"}' | sed -n -e 's/^\s*"returnValue":\s*\(true\|false\)\s*,\?\s*$/\1/p'
+}
+
+create_lockfile() {
+    lockfile="${1}"
+    exec 200>"${lockfile}"
+
+    flock -x -n -- 200 || { echo '[!] Another instance of this script is currently running'; exit 2; }
+
+    trap -- "rm -f -- '${lockfile}'" EXIT
 }
 
 check_sd_verify() {
@@ -83,6 +105,18 @@ check_sd_verify() {
     fgrep -q -e 'openssl dgst' -- "${script}"
 }
 
+download_file() {
+    dl_url="${1}"
+    dl_path="${2}"
+
+    if [ -e "${dl_path}" ]; then
+        log "Download target '${dl_path}' already exists; deleting"
+        rm -f -- "${dl_path}"
+    fi
+
+    curl -L -o "${dl_path}" -- "${dl_url}"
+}
+
 sd_script='/media/cryptofs/apps/usr/palm/services/com.palmdts.devmode.service/start-devmode.sh'
 sd_sig='/media/cryptofs/apps/usr/palm/services/com.palmdts.devmode.service/start-devmode.sig'
 sd_key='/usr/palm/services/com.palm.service.devmode/pub.pem'
@@ -104,7 +138,7 @@ verify_sd() {
 
     verify="$(openssl dgst -sha512 -verify "${sd_key}" -signature "${sd_sig}" "${sd_script}")"
 
-    case "${verify}" in 
+    case "${verify}" in
     'Verified OK')
         debug 'start-devmode.sh verification succeeded'
         return 0
@@ -120,85 +154,24 @@ verify_sd() {
     esac
 }
 
-lockfile='/tmp/autoroot.lock'
-exec 200>"${lockfile}"
-
-flock -x -n -- 200 || { echo '[!] Another instance of this script is currently running'; exit 2; }
-
-trap -- "rm -f -- '${lockfile}'" EXIT
-
-[ -e "${USB_PATH}/autoroot.debug" ] && DEBUG='file'
-
-[ -n "${DEBUG}" ] && toast 'Script is running!'
-
-[ -e "${USB_PATH}/autoroot.telnet" ] && { telnetd -l sh || echo "[!] Failed to start telnetd (${?})"; }
-
-umask 022
-
-if ! tempdir="$(mktemp -d -- '/tmp/autoroot.XXXXXX')"; then
-    echo '[x] Failed to create random temporary directory; using PID-based fallback'
-    tempdir="/tmp/autoroot.${$}"
-    if ! mkdir -- "${tempdir}"; then
-        echo "[x] PID-based fallback temporary directory ${tempdir} already exists"
-        tempdir='/tmp/autoroot.temp'
-        rm -rf -- "${tempdir}"
-        mkdir -- "${tempdir}"
-    fi
-fi
-
-logfile="${tempdir}/log"
-touch -- "${logfile}"
-
-if [ -n "${DEBUG}" ]; then
-    loglink='/tmp/autoroot.log'
-    rm -rf -- "${loglink}"
-    ln -s -- "${logfile}" "${loglink}"
-fi
-
-log 'hi'
-
-log "script path: ${0}"
-
-debug "temp dir: ${tempdir}"
-
-log "date: $(date -u -- '+%Y-%m-%d %H:%M:%S UTC')"
-log "id: $(id)"
-
-usb_oncefile="${USB_PATH}/autoroot.once"
-tmp_oncefile='/tmp/autoroot.once'
-
-[ -e "${usb_oncefile}" -a -e "${tmp_oncefile}" ] && { log 'Script already executed'; exit 3; }
-
-touch -- "${usb_oncefile}" "${tmp_oncefile}"
-fsync -- "${usb_oncefile}"
-
-trap -- "cp -f -- '${logfile}' '${USB_PATH}/autoroot.log'" EXIT
-
-webos_ver="$(get_sdkversion)"
-
-log "webOS version: ${webos_ver}"
-
-if [ ! -f "${IPK_SRC}" ]; then
-    error "IPK not found at '${IPK_SRC}'."
-    exit 1
-fi
-
-if [ -d '/var/luna/preferences/devmode_enabled' ]; then
-    log 'devmode_enabled is already a directory; is your TV already rooted?'
-else
-    if [ -e '/var/luna/preferences/devmode_enabled' ]; then
-        log 'devmode_enabled exists; make sure the LG Dev Mode app is not installed!'
-
-        rm -f -- '/var/luna/preferences/devmode_enabled'
+enable_devmode() {
+    if [ -d '/var/luna/preferences/devmode_enabled' ]; then
+        log 'devmode_enabled is already a directory; is your TV already rooted?'
     else
-        debug 'devmode_enabled does not exist'
-    fi
+        if [ -e '/var/luna/preferences/devmode_enabled' ]; then
+            log 'devmode_enabled exists; make sure the LG Dev Mode app is not installed!'
 
-    if ! mkdir -- '/var/luna/preferences/devmode_enabled'; then
-        error 'Failed to create devmode_enabled directory'
-        exit 1
+            rm -f -- '/var/luna/preferences/devmode_enabled'
+        else
+            debug 'devmode_enabled does not exist'
+        fi
+
+        if ! mkdir -- '/var/luna/preferences/devmode_enabled'; then
+            error 'Failed to create devmode_enabled directory'
+            exit 1
+        fi
     fi
-fi
+}
 
 restart_appinstalld() {
     if restart appinstalld >/dev/null; then
@@ -208,13 +181,14 @@ restart_appinstalld() {
     fi
 }
 
-restart_appinstalld
+install_ipk() {
+    ipkpath="${1}"
 
-ipkpath="${tempdir}/hbchannel.ipk"
+    if  [ ! -f "${ipkpath}" ]; then
+        error 'IPK not found during installation'
+        exit 1s
+    fi
 
-cp -- "${IPK_SRC}" "${ipkpath}"
-
-install_hbchannel() {
     instpayload="$(printf '{"id":"com.ares.defaultName","ipkUrl":"%s","subscribe":true}' "${ipkpath}")"
 
     fifopath="${tempdir}/fifo"
@@ -258,90 +232,168 @@ install_hbchannel() {
     return 0
 }
 
-sleep_secs_base=2
-retries=3
-
-for retry in $(seq "${retries}" -1 0); do
-    if install_hbchannel; then
-        # success
-        break
-    fi
-
-    if [ "${retry}" -eq 0 ]; then
-        error 'Retries exhausted: giving up'
+elevate_hbchannel() {
+    if ! /media/developer/apps/usr/palm/services/org.webosbrew.hbchannel.service/elevate-service >"${tempdir}/elevate.log"; then
+        error 'Elevation failed'
         exit 1
     fi
+}
 
-    sleep_secs=$((sleep_secs_base * (retries - retry + 1)))
+# Set up persistent root access
+perform_root() {
+    enable_devmode
 
-    
     restart_appinstalld
 
-    log "Sleeping for ${sleep_secs} seconds before trying again (${retry} tries remaining)"
-    sleep "${sleep_secs}"
-done
+    sleep_secs_base=2
+    retries=3
 
-if ! /media/developer/apps/usr/palm/services/org.webosbrew.hbchannel.service/elevate-service >"${tempdir}/elevate.log"; then
-    error 'Elevation failed'
-    exit 1
-fi
+    for retry in $(seq "${retries}" -1 0); do
+        if install_ipk "${ipk}"; then
+            # success
+            break
+        fi
 
-log 'Rooting complete'
-toast 'Rooting complete. <h4>Do not install the LG Dev Mode app while rooted!</h4>'
+        if [ "${retry}" -eq 0 ]; then
+            error 'Retries exhausted: giving up'
+            exit 1
+        fi
 
-if [ -f "${sd_script}" ]; then
-    if check_sd_verify; then
-        log 'Current firmware verifies start-devmode.sh signature'
+        sleep_secs=$((sleep_secs_base * (retries - retry + 1)))
 
-        if verify_sd; then
-            log 'Your start-devmode.sh passes verification. If the Dev Mode app is installed, uninstall it!'
+        restart_appinstalld
+
+        log "Sleeping for ${sleep_secs} seconds before trying again (${retry} tries remaining)"
+        sleep "${sleep_secs}"
+    done
+
+    elevate_hbchannel
+
+    log 'Rooting complete'
+    toast 'Rooting complete. <h4>Do not install the LG Dev Mode app while rooted!</h4>'
+
+    if [ -f "${sd_script}" ]; then
+        if check_sd_verify; then
+            log 'Current firmware verifies start-devmode.sh signature'
+
+            if verify_sd; then
+                log 'Your start-devmode.sh passes verification. If the Dev Mode app is installed, uninstall it!'
+            else
+                mv -- "${sd_script}" "${sc_script}.backup"
+                log 'Your start-devmode.sh failed verification and was renamed to prevent /media/developer from being wiped'
+                toast '<b>Warning:</b> Renamed start-devmode.sh to prevent deletion of apps'
+            fi
         else
-            mv -- "${sd_script}" "${sc_script}.backup"
-            log 'Your start-devmode.sh failed verification and was renamed to prevent /media/developer from being wiped'
-            toast '<b>Warning:</b> Renamed start-devmode.sh to prevent deletion of apps'
+            log 'Current firmware does not verify start-devmode.sh signature, but an updated version might'
+
+            if [ ! -f "${sd_sig}" ]; then
+                log 'You are missing start-devmode.sig, so verification would fail. Be careful updating your firmware!'
+            fi
         fi
     else
-        log 'Current firmware does not verify start-devmode.sh signature, but an updated version might'
-
-        if [ ! -f "${sd_sig}" ]; then
-            log 'You are missing start-devmode.sig, so verification would fail. Be careful updating your firmware!'
-        fi
+        debug 'start-devmode.sh does not exist; skipping checks'
     fi
-else
-    debug 'start-devmode.sh does not exist; skipping checks'
+
+    devmode_installed="$(get_devmode_app_state)"
+
+    debug "Dev Mode app installed: '${devmode_installed}'"
+
+    buttons_reboot='{"label":"Reboot now","onclick":"luna://com.webos.service.sleep/shutdown/machineReboot","params":{"reason":"remoteKey"}},{"label":"Don'\''t reboot"}'
+    buttons_ok='{"label":"OK"}'
+
+    message_reboot='Would you like to reboot now?'
+    message_devmode='However, the Dev Mode app is installed. You must uninstall it before rebooting!'
+    message_devmode_unknown='The status of the Dev Mode app could not be determined. Please report this issue. If you know it is not installed, you can reboot now. Otherwise, make sure it is removed before rebooting.<br>Would you like to reboot now?'
+
+    case "${devmode_installed}" in
+        false)
+            log "Dev Mode app not installed. (Don't install it!)"
+            buttons="${buttons_reboot}"
+            message="${message_reboot}"
+        ;;
+        true)
+            log 'Dev Mode app installed; uninstall it before rebooting!'
+            buttons="${buttons_ok}"
+            message="${message_devmode}"
+        ;;
+        *)
+            log "Unknown Dev Mode app state: '${devmode_installed}' (please report)"
+            buttons="${buttons_reboot}"
+            message="${message_devmode_unknown}"
+        ;;
+    esac
+
+    payload="$(printf '{"sourceId":"%s","message":"<h3>%s</h3>Rooting complete. You may need to reboot for Homebrew Channel to appear.<br>%s","buttons":[%s]}' "${SRC_APPID}" "${SCRIPT_NAME}" "${message}" "${buttons}")"
+
+    alert_response="$(luna-send -w 2000 -a "${SRC_APPID}" -n 1 'luna://com.webos.notification/createAlert' "${payload}")"
+
+    debug "/createAlert response: '${alert_response}'"
+}
+
+create_lockfile '/tmp/autoroot.lock'
+
+[ -e "${SCRIPT_DIR}/autoroot.debug" ] && DEBUG='file'
+
+[ -n "${DEBUG}" ] && toast 'Script is running!'
+
+[ -e "${SCRIPT_DIR}/autoroot.telnet" ] && { telnetd -l sh || echo "[!] Failed to start telnetd (${?})"; }
+
+umask 022
+
+if ! tempdir="$(mktemp -d -- '/tmp/autoroot.XXXXXX')"; then
+    echo '[x] Failed to create random temporary directory; using PID-based fallback'
+    tempdir="/tmp/autoroot.${$}"
+    if ! mkdir -- "${tempdir}"; then
+        echo "[x] PID-based fallback temporary directory ${tempdir} already exists"
+        tempdir='/tmp/autoroot.temp'
+        rm -rf -- "${tempdir}"
+        mkdir -- "${tempdir}"
+    fi
 fi
 
-devmode_installed="$(get_devmode_app_state)"
+logfile="${tempdir}/log"
+touch -- "${logfile}"
 
-debug "Dev Mode app installed: '${devmode_installed}'"
+if [ -n "${DEBUG}" ]; then
+    loglink='/tmp/autoroot.log'
+    rm -rf -- "${loglink}"
+    ln -s -- "${logfile}" "${loglink}"
+fi
 
-buttons_reboot='{"label":"Reboot now","onclick":"luna://com.webos.service.sleep/shutdown/machineReboot","params":{"reason":"remoteKey"}},{"label":"Don'\''t reboot"}'
-buttons_ok='{"label":"OK"}'
+log 'hi'
 
-message_reboot='Would you like to reboot now?'
-message_devmode='However, the Dev Mode app is installed. You must uninstall it before rebooting!'
-message_devmode_unknown='The status of the Dev Mode app could not be determined. Please report this issue. If you know it is not installed, you can reboot now. Otherwise, make sure it is removed before rebooting.<br>Would you like to reboot now?'
+log "script path: ${0}"
 
-case "${devmode_installed}" in
-    false)
-        log "Dev Mode app not installed. (Don't install it!)"
-        buttons="${buttons_reboot}"
-        message="${message_reboot}"
-    ;;
-    true)
-        log 'Dev Mode app installed; uninstall it before rebooting!'
-        buttons="${buttons_ok}"
-        message="${message_devmode}"
-    ;;
-    *)
-        log "Unknown Dev Mode app state: '${devmode_installed}' (please report)"
-        buttons="${buttons_reboot}"
-        message="${message_devmode_unknown}"
-    ;;
-esac
+debug "temp dir: ${tempdir}"
 
-payload="$(printf '{"sourceId":"%s","message":"<h3>dejavuln-autoroot</h3>Rooting complete. You may need to reboot for Homebrew Channel to appear.<br>%s","buttons":[%s]}' "${srcapp}" "${message}" "${buttons}")"
+log "date: $(date -u -- '+%Y-%m-%d %H:%M:%S UTC')"
+log "id: $(id)"
 
-alert_response="$(luna-send -w 2000 -a "${srcapp}" -n 1 'luna://com.webos.notification/createAlert' "${payload}")"
+usb_oncefile="${SCRIPT_DIR}/autoroot.once"
+tmp_oncefile='/tmp/autoroot.once'
 
-debug "/createAlert response: '${alert_response}'"
+[ -e "${usb_oncefile}" -a -e "${tmp_oncefile}" ] && { log 'Script already executed'; exit 3; }
+
+touch -- "${usb_oncefile}" "${tmp_oncefile}"
+fsync -- "${usb_oncefile}"
+
+trap -- "cp -f -- '${logfile}' '${SCRIPT_DIR}/autoroot.log'" EXIT
+
+webos_version="$(get_sdkversion)"
+
+log "webOS version: ${webos_version}"
+
+ipk="${tempdir}/hbchannel.ipk"
+
+if [ -f "${IPK_SRC}" ]; then
+    debug "Using bundled Homebrew Channel IPK"
+    cp -- "${IPK_SRC}" "${ipk}"
+else
+    log "Homebrew Channel IPK not found at '${IPK_SRC}'; downloading..."
+    if ! download_file "${IPK_URL}" "${ipk}"; then
+        error "Failed to download Homebrew Channel IPK from ${IPK_URL}"
+        exit 1
+    fi
+fi
+
+perform_root
