@@ -62,6 +62,9 @@ root directory of the USB drive:
 * `autoroot.debug` - Enables additional logging.
 * `autoroot.telnet` - Makes a root shell available via telnet on port 23 when
   the script starts.
+* `autoroot.leave-script` - Don't rename invalid `start-devmode.sh`.
+  (You almost certainly won't need this, but it's documented here for the sake
+  of completeness.)
 
 ## Troubleshooting
 

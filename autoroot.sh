@@ -122,12 +122,12 @@ sd_sig='/media/cryptofs/apps/usr/palm/services/com.palmdts.devmode.service/start
 sd_key='/usr/palm/services/com.palm.service.devmode/pub.pem'
 
 verify_sd() {
-    # if it's not present, don't worry about it
+    # If it's not present, don't worry about it
     [ ! -f "${sd_script}" ] && return 0
 
     if [ ! -f "${sd_key}" ]; then
         log "Expected Dev Mode public key is not present; please report this!"
-        # verification will fail without the public key file
+        # Verification will fail without the public key file
         return 1
     fi
 
@@ -269,8 +269,7 @@ perform_root() {
 
     elevate_hbchannel
 
-    log 'Rooting complete'
-    toast 'Rooting complete. <h4>Do not install the LG Dev Mode app while rooted!</h4>'
+    log 'Homebrew Channel has been elevated'
 
     if [ -f "${sd_script}" ]; then
         if check_sd_verify; then
@@ -278,10 +277,17 @@ perform_root() {
 
             if verify_sd; then
                 log 'Your start-devmode.sh passes verification. If the Dev Mode app is installed, uninstall it!'
+            elif [ -n "${LEAVE_SCRIPT}" ]; then
+                # Invalid start-devmode.sh but --leave-script set
+                debug 'Not renaming invalid start-devmode.sh due to option'
             else
-                mv -- "${sd_script}" "${sc_script}.backup"
-                log 'Your start-devmode.sh failed verification and was renamed to prevent /media/developer from being wiped'
-                toast '<b>Warning:</b> Renamed start-devmode.sh to prevent deletion of apps'
+                # Invalid start-devmode.sh and --leave-script not set
+                if mv -- "${sd_script}" "${sd_script}.backup"; then
+                    log 'Your start-devmode.sh failed verification and was renamed to prevent /media/developer from being wiped'
+                    toast '<b>Warning:</b> Renamed start-devmode.sh to prevent deletion of apps'
+                else
+                    error 'Failed to rename bad start-devmode.sh. You will lose root on reboot!'
+                fi
             fi
         else
             log 'Current firmware does not verify start-devmode.sh signature, but an updated version might'
@@ -328,6 +334,9 @@ perform_root() {
     alert_response="$(luna-send -w 2000 -a "${SRC_APPID}" -n 1 'luna://com.webos.notification/createAlert' "${payload}")"
 
     debug "/createAlert response: '${alert_response}'"
+
+    log 'Rooting complete'
+    toast 'Rooting complete. <h4>Do not install the LG Dev Mode app while rooted!</h4>'
 }
 
 create_lockfile '/tmp/autoroot.lock'
@@ -337,6 +346,8 @@ create_lockfile '/tmp/autoroot.lock'
 [ -n "${DEBUG}" ] && toast 'Script is running!'
 
 [ -e "${SCRIPT_DIR}/autoroot.telnet" ] && { telnetd -l sh || echo "[!] Failed to start telnetd (${?})"; }
+
+[ -e "${SCRIPT_DIR}/autoroot.leave-script" ] && LEAVE_SCRIPT='file'
 
 umask 022
 
