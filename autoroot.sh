@@ -74,13 +74,26 @@ get_devmode_app_state() {
     luna-send -w 5000 -n 1 -q 'returnValue' -f 'luna://com.webos.applicationManager/getAppInfo' '{"id":"com.palmdts.devmode"}' | sed -n -e 's/^\s*"returnValue":\s*\(true\|false\)\s*,\?\s*$/\1/p'
 }
 
+exit_handler=''
+
+# Prepends argument to EXIT handler
+add_exit_trap() {
+    if [ -n "${exit_handler}" ]; then
+        exit_handler="${1};${exit_handler}"
+    else
+        exit_handler="${1}"
+    fi
+
+    trap "${exit_handler}" 'EXIT'
+}
+
 create_lockfile() {
     lockfile="${1}"
     exec 200>"${lockfile}"
 
     flock -x -n -- 200 || { echo '[!] Another instance of this script is currently running'; exit 2; }
 
-    trap -- "rm -f -- '${lockfile}'" EXIT
+    add_exit_trap "rm -f -- '${lockfile}'"
 }
 
 check_sd_verify() {
@@ -388,7 +401,7 @@ tmp_oncefile='/tmp/autoroot.once'
 touch -- "${usb_oncefile}" "${tmp_oncefile}"
 fsync -- "${usb_oncefile}"
 
-trap -- "cp -f -- '${logfile}' '${SCRIPT_DIR}/autoroot.log'" EXIT
+add_exit_trap "cp -f -- '${logfile}' '${SCRIPT_DIR}/autoroot.log'"
 
 webos_version="$(get_sdkversion)"
 
