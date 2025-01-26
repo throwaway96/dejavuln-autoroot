@@ -199,7 +199,7 @@ install_ipk() {
 
     if  [ ! -f "${ipkpath}" ]; then
         error 'IPK not found during installation'
-        exit 1s
+        exit 1
     fi
 
     instpayload="$(printf '{"id":"com.ares.defaultName","ipkUrl":"%s","subscribe":true}' "${ipkpath}")"
