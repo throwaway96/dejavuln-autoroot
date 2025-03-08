@@ -9,7 +9,7 @@ firmware for most webOS 5+ TVs is also patched.
 
 > [!NOTE]
 > Use [CanI.RootMy.TV](https://cani.rootmy.tv/) to determine whether your
-> firmware is vulnerable.
+> firmware is vulnerable or find other exploits.
 
 ## Patch status
 
@@ -22,13 +22,15 @@ firmware for most webOS 5+ TVs is also patched.
 
 The latest firmware for most webOS 5+ OTAIDs is patched.
 
-I expect almost all webOS 4.5+ OTAIDs to be patched. However, webOS 3.5
+I expect almost all webOS 5+ OTAIDs to be patched. However, webOS 3.5
 will almost certainly never receive patched firmware, and 4.0 probably
-won't either.
+won't either. I don't know about 4.5, but I haven't seen any patched
+webOS 4.5 firmware so far.
 
-All release versions of webOS 9 ("webOS 24") are patched. This means 
-2024 models and older TVs that have been upgraded to webOS 9 are not
-currently rootable. (But they will be, at some point...)
+All release versions of webOS 9 ("webOS 24") are patched. This means
+2024 models and older TVs that have been upgraded to webOS 9 will require
+another exploit such as
+[faultmanager-autoroot](https://github.com/throwaway96/faultmanager-autoroot).
 
 **If you want to donate any TV boards for development, please contact me on the
 [OpenLGTV Discord](https://discord.gg/hXMHAgJC5R).**
